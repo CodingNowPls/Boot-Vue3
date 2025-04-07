@@ -3,11 +3,11 @@
     <el-form ref="registerRef" :model="registerForm" :rules="registerRules" class="register-form">
       <h3 class="title">{{ title }}</h3>
       <el-form-item prop="username">
-        <el-input 
-          v-model="registerForm.username" 
-          type="text" 
-          size="large" 
-          auto-complete="off" 
+        <el-input
+          v-model="registerForm.username"
+          type="text"
+          size="large"
+          auto-complete="off"
           placeholder="账号"
         >
           <template #prefix><svg-icon icon-class="user" class="el-input__icon input-icon" /></template>
@@ -17,7 +17,7 @@
         <el-input
           v-model="registerForm.password"
           type="password"
-          size="large" 
+          size="large"
           auto-complete="off"
           placeholder="密码"
           @keyup.enter="handleRegister"
@@ -29,7 +29,7 @@
         <el-input
           v-model="registerForm.confirmPassword"
           type="password"
-          size="large" 
+          size="large"
           auto-complete="off"
           placeholder="确认密码"
           @keyup.enter="handleRegister"
@@ -39,7 +39,7 @@
       </el-form-item>
       <el-form-item prop="code" v-if="captchaEnabled">
         <el-input
-          size="large" 
+          size="large"
           v-model="registerForm.code"
           auto-complete="off"
           placeholder="验证码"
@@ -55,7 +55,7 @@
       <el-form-item style="width:100%;">
         <el-button
           :loading="loading"
-          size="large" 
+          size="large"
           type="primary"
           style="width:100%;"
           @click.prevent="handleRegister"
@@ -84,7 +84,7 @@ const router = useRouter();
 const { proxy } = getCurrentInstance();
 
 const registerForm = ref({
-  username: "",
+  userName: "",
   password: "",
   confirmPassword: "",
   code: "",
@@ -100,7 +100,7 @@ const equalToPassword = (rule, value, callback) => {
 };
 
 const registerRules = {
-  username: [
+  userName: [
     { required: true, trigger: "blur", message: "请输入您的账号" },
     { min: 2, max: 20, message: "用户账号长度必须介于 2 和 20 之间", trigger: "blur" }
   ],
@@ -125,8 +125,8 @@ function handleRegister() {
     if (valid) {
       loading.value = true;
       register(registerForm.value).then(res => {
-        const username = registerForm.value.username;
-        ElMessageBox.alert("<font color='red'>恭喜你，您的账号 " + username + " 注册成功！</font>", "系统提示", {
+        const userName = registerForm.value.userName;
+        ElMessageBox.alert("<font color='red'>恭喜你，您的账号 " + userName + " 注册成功！</font>", "系统提示", {
           dangerouslyUseHTMLString: true,
           type: "success",
         }).then(() => {
