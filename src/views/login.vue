@@ -69,6 +69,7 @@ import { getCodeImg } from "@/api/login";
 import Cookies from "js-cookie";
 import { encrypt, decrypt } from "@/utils/jsencrypt";
 import useUserStore from '@/store/modules/user'
+import { getConfig } from '@/api/system/config'
 
 const title = import.meta.env.VITE_APP_TITLE;
 const userStore = useUserStore();
@@ -94,8 +95,11 @@ const codeUrl = ref("");
 const loading = ref(false);
 // 验证码开关
 const captchaEnabled = ref(true);
+
+//注册配置id
+const registerConfigId = ref(5);
 // 注册开关
-const register = ref(false);
+let register = ref(false);
 const redirect = ref(undefined);
 
 watch(route, (newRoute) => {
@@ -158,7 +162,14 @@ function getCookie() {
     rememberMe: rememberMe === undefined ? false : Boolean(rememberMe)
   };
 }
+function registerGetConfig() {
+  getConfig(registerConfigId.value).then(res => {
+    register.value = res.data.configValue == 'true' ? true : false;
+  })
+}
 
+
+registerGetConfig();
 getCode();
 getCookie();
 </script>
