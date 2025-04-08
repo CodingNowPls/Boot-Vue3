@@ -1,18 +1,21 @@
 import { login, logout, getInfo } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
-import { isHttp, isEmpty } from "@/utils/validate"
 import defAva from '@/assets/images/profile.jpg'
+import { defineStore } from 'pinia'
 
 const useUserStore = defineStore(
   'user',
   {
     state: () => ({
       token: getToken(),
-      id: '',
       name: '',
       avatar: '',
       roles: [],
-      permissions: []
+      permissions: [],
+      userId: null,
+      currenttenantId: null, // 当前租户ID
+      isAdminLogin: false, // 是否是管理员登录
+      tenantInfo: null, // 租户信息
     }),
     actions: {
       // 登录
@@ -21,10 +24,14 @@ const useUserStore = defineStore(
         const password = userInfo.password
         const code = userInfo.code
         const uuid = userInfo.uuid
+        const tenantId = userInfo.tenantId
+        const isAdminLogin = userInfo.isAdminLogin || false
+
         return new Promise((resolve, reject) => {
-          login(userName, password, code, uuid).then(res => {
+          login(userName, password, code, uuid, isAdminLogin, tenantId).then(res => {
             setToken(res.token)
             this.token = res.token
+            this.isAdminLogin = isAdminLogin
             resolve()
           }).catch(error => {
             reject(error)
@@ -36,19 +43,20 @@ const useUserStore = defineStore(
         return new Promise((resolve, reject) => {
           getInfo().then(res => {
             const user = res.user
-            let avatar = user.avatar || ""
-            if (!isHttp(avatar)) {
-              avatar = (isEmpty(avatar)) ? defAva : import.meta.env.VITE_APP_BASE_API + avatar
-            }
+            const avatar = (user.avatar == "" || user.avatar == null) ? defAva : import.meta.env.VITE_APP_BASE_API + user.avatar
+
             if (res.roles && res.roles.length > 0) { // 验证返回的roles是否是一个非空数组
               this.roles = res.roles
               this.permissions = res.permissions
             } else {
               this.roles = ['ROLE_DEFAULT']
             }
-            this.id = user.userId
             this.name = user.userName
             this.avatar = avatar
+            this.userId = user.userId
+            this.currenttenantId = res.currenttenantId
+            this.isAdminLogin = res.isAdminLogin
+            this.tenantInfo = res.tenantInfo
             resolve(res)
           }).catch(error => {
             reject(error)
@@ -62,8 +70,28 @@ const useUserStore = defineStore(
             this.token = ''
             this.roles = []
             this.permissions = []
+            this.currenttenantId = null
+            this.isAdminLogin = false
+            this.tenantInfo = null
             removeToken()
             resolve()
+          }).catch(error => {
+            reject(error)
+          })
+        })
+      },
+      // 切换租户
+      switchTenant(tenantId) {
+        return new Promise((resolve, reject) => {
+          // 调用切换租户的API
+          switchTenant(tenantId).then(res => {
+            // 更新当前租户信息
+            this.currenttenantId = tenantId
+            this.tenantInfo = res.tenantInfo
+            // 更新权限和角色
+            this.roles = res.roles
+            this.permissions = res.permissions
+            resolve(res)
           }).catch(error => {
             reject(error)
           })

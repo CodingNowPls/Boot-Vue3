@@ -1,7 +1,27 @@
 <template>
   <div class="login">
-    <el-form ref="loginRef" :model="loginForm" :rules="loginRules" class="login-form">
-      <h3 class="title">{{ title }}</h3>
+    <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" class="login-form">
+      <h3 class="title">后台管理系统</h3>
+      <div class="login-type-switch">
+        <span></span>
+        <el-button type="primary" size="small" @click="switchToAdmin">切换到管理员登录</el-button>
+      </div>
+      <!-- 租户选择下拉框 -->
+      <el-form-item prop="tenantId">
+        <el-select
+            v-model="loginForm.tenantId"
+            placeholder="请选择租户"
+            style="width: 100%"
+            size="large"
+        >
+          <el-option
+              v-for="item in tenantOptions"
+              :key="item.tenantId"
+              :label="item.tenantName"
+              :value="item.tenantId"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item prop="userName">
         <el-input
           v-model="loginForm.userName"
@@ -25,6 +45,7 @@
           <template #prefix><svg-icon icon-class="password" class="el-input__icon input-icon" /></template>
         </el-input>
       </el-form-item>
+
       <el-form-item prop="code" v-if="captchaEnabled">
         <el-input
           v-model="loginForm.code"
@@ -59,122 +80,140 @@
     </el-form>
     <!--  底部  -->
     <div class="el-login-footer">
-      <span>Copyright © 2018-2025 ruoyi.vip All Rights Reserved.</span>
+      <span>Copyright © 2018-2023 ruoyi.vip All Rights Reserved.</span>
     </div>
   </div>
 </template>
 
 <script setup>
 import { getCodeImg } from "@/api/login";
+import { listTenants } from "@/api/tenant/tenant";
 import Cookies from "js-cookie";
 import { encrypt, decrypt } from "@/utils/jsencrypt";
-import useUserStore from '@/store/modules/user'
-import { getConfig } from '@/api/system/config'
-
-const title = import.meta.env.VITE_APP_TITLE;
-const userStore = useUserStore();
-const route = useRoute();
+import useUserStore from '@/store/modules/user';
+import { ref, reactive, toRefs, onMounted } from 'vue';
+// 确保正确引入了路由
+import { useRouter } from 'vue-router';
 const router = useRouter();
-const { proxy } = getCurrentInstance();
 
-const loginForm = ref({
-  userName: "",
-  password: "",
-  rememberMe: false,
-  code: "",
-  uuid: ""
+const userStore = useUserStore();
+const loginFormRef = ref(null);
+const tenantOptions = ref([]);
+
+const state = reactive({
+  codeUrl: "",
+  loginForm: {
+    userName: "",
+    password: "",
+    rememberMe: false,
+    code: "",
+    uuid: "",
+    tenantId: undefined
+  },
+  loginRules: {
+    userName: [
+      { required: true, trigger: "blur", message: "请输入您的账号" }
+    ],
+    password: [
+      { required: true, trigger: "blur", message: "请输入您的密码" }
+    ],
+    tenantId: [
+      { required: true, trigger: "change", message: "请选择租户" }
+    ],
+    code: [{ required: true, trigger: "change", message: "请输入验证码" }]
+  },
+  loading: false,
+  // 验证码开关
+  captchaEnabled: true,
+  // 注册开关
+  register: false,
+  redirect: undefined
 });
 
-const loginRules = {
-  userName: [{ required: true, trigger: "blur", message: "请输入您的账号" }],
-  password: [{ required: true, trigger: "blur", message: "请输入您的密码" }],
-  code: [{ required: true, trigger: "change", message: "请输入验证码" }]
-};
+const { codeUrl, loginForm, loginRules, loading, captchaEnabled, register, redirect } = toRefs(state);
 
-const codeUrl = ref("");
-const loading = ref(false);
-// 验证码开关
-const captchaEnabled = ref(true);
+function getCode() {
+  getCodeImg().then(res => {
+    state.captchaEnabled = res.captchaEnabled === undefined ? true : res.captchaEnabled;
+    if (state.captchaEnabled) {
+      state.codeUrl = "data:image/gif;base64," + res.img;
+      state.loginForm.uuid = res.uuid;
+    }
+  });
+}
 
-//注册配置id
-const registerConfigId = ref(5);
-// 注册开关
-let register = ref(false);
-const redirect = ref(undefined);
-
-watch(route, (newRoute) => {
-    redirect.value = newRoute.query && newRoute.query.redirect;
-}, { immediate: true });
+function getTenants() {
+  listTenants({ pageNum: 1, pageSize: 100, status: 0 }).then(res => {
+    tenantOptions.value = res.rows;
+  });
+}
 
 function handleLogin() {
-  proxy.$refs.loginRef.validate(valid => {
+  loginFormRef.value.validate(valid => {
     if (valid) {
-      loading.value = true;
-      // 勾选了需要记住密码设置在 cookie 中设置记住用户名和密码
-      if (loginForm.value.rememberMe) {
-        Cookies.set("userName", loginForm.value.userName, { expires: 30 });
-        Cookies.set("password", encrypt(loginForm.value.password), { expires: 30 });
-        Cookies.set("rememberMe", loginForm.value.rememberMe, { expires: 30 });
+      state.loading = true;
+      // 勾选了需要记住密码设置cookie
+      if (state.loginForm.rememberMe) {
+        Cookies.set("userName", state.loginForm.userName, { expires: 30 });
+        Cookies.set("password", encrypt(state.loginForm.password), { expires: 30 });
+        Cookies.set("rememberMe", state.loginForm.rememberMe, { expires: 30 });
+        Cookies.set("tenantId", state.loginForm.tenantId, { expires: 30 });
       } else {
-        // 否则移除
+        // 否则移除cookie
         Cookies.remove("userName");
         Cookies.remove("password");
         Cookies.remove("rememberMe");
+        Cookies.remove("tenantId");
       }
       // 调用action的登录方法
-      userStore.login(loginForm.value).then(() => {
-        const query = route.query;
-        const otherQueryParams = Object.keys(query).reduce((acc, cur) => {
-          if (cur !== "redirect") {
-            acc[cur] = query[cur];
-          }
-          return acc;
-        }, {});
-        router.push({ path: redirect.value || "/", query: otherQueryParams });
+      userStore.login({
+        userName: state.loginForm.userName,
+        password: state.loginForm.password,
+        code: state.loginForm.code,
+        uuid: state.loginForm.uuid,
+        tenantId: state.loginForm.tenantId,
+        isAdminLogin: false // 标记为租户登录
+      }).then(() => {
+        router.push({ path: state.redirect || "/" });
       }).catch(() => {
-        loading.value = false;
-        // 重新获取验证码
-        if (captchaEnabled.value) {
-          getCode();
-        }
+        state.loading = false;
+        getCode();
       });
     }
   });
 }
 
-function getCode() {
-  getCodeImg().then(res => {
-    captchaEnabled.value = res.captchaEnabled === undefined ? true : res.captchaEnabled;
-    if (captchaEnabled.value) {
-      codeUrl.value = res.img;
-      loginForm.value.uuid = res.uuid;
-    }
-  });
+// 在switchToAdmin函数中
+function switchToAdmin() {
+  router.push('/login-admin');
 }
 
-function getCookie() {
+onMounted(() => {
+  if (state.captchaEnabled) {
+    getCode();
+  }
+  // 获取租户列表
+  getTenants();
+
+  // 获取cookie
   const userName = Cookies.get("userName");
   const password = Cookies.get("password");
-  const rememberMe = Cookies.get("rememberMe");
-  loginForm.value = {
-    userName: userName === undefined ? loginForm.value.userName : userName,
-    password: password === undefined ? loginForm.value.password : decrypt(password),
-    rememberMe: rememberMe === undefined ? false : Boolean(rememberMe)
-  };
-}
-function registerGetConfig() {
-  getConfig(registerConfigId.value).then(res => {
-    register.value = res.data.configValue == 'true' ? true : false;
-  })
-}
+  const rememberMe = Cookies.get('rememberMe');
+  const tenantId = Cookies.get('tenantId');
 
-
-registerGetConfig();
-getCode();
-getCookie();
+  // 设置默认值
+  state.loginForm.rememberMe = rememberMe === 'true';
+  if (userName) {
+    state.loginForm.userName = userName;
+    state.loginForm.password = password ? decrypt(password) : '';
+    if (tenantId) {
+      state.loginForm.tenantId = parseInt(tenantId);
+    }
+  }
+});
 </script>
 
-<style lang='scss' scoped>
+<style lang="scss" scoped>
 .login {
   display: flex;
   justify-content: center;
@@ -235,5 +274,12 @@ getCookie();
 .login-code-img {
   height: 40px;
   padding-left: 12px;
+}
+
+.login-type-switch {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  color: #606266;
 }
 </style>

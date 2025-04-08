@@ -2,29 +2,21 @@ import request from '@/utils/request'
 import {encrypt} from "@/utils/jsencrypt.js";
 
 // 登录方法
-export function login(userName, password, code, uuid) {
+export function login(userName, password, code, uuid, isAdminLogin, tenantId) {
   password = encrypt(password);
   const data = {
     userName,
     password,
     code,
-    uuid
+    uuid,
+    isAdminLogin
+  }
+  // 如果是租户登录，添加租户ID
+  if (!isAdminLogin && tenantId) {
+    data.tenantId = tenantId
   }
   return request({
     url: '/login',
-    headers: {
-      isToken: false,
-      repeatSubmit: false
-    },
-    method: 'post',
-    data: data
-  })
-}
-
-// 注册方法
-export function register(data) {
-  return request({
-    url: '/register',
     headers: {
       isToken: false
     },
@@ -58,5 +50,14 @@ export function getCodeImg() {
     },
     method: 'get',
     timeout: 20000
+  })
+}
+
+// 切换租户
+export function switchTenant(tenantId) {
+  return request({
+    url: '/system/user/switchTenant',
+    method: 'post',
+    data: { tenantId }
   })
 }

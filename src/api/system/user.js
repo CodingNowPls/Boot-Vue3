@@ -134,3 +134,20 @@ export function deptTreeSelect() {
     method: 'get'
   })
 }
+
+// 获取用户所属租户列表
+export function getUserTenants() {
+  return request({
+    url: '/system/user/tenants',
+    method: 'get'
+  })
+}
+
+// 切换租户
+export function switchTenant(tenantId) {
+  return request({
+    url: '/system/user/switchTenant',
+    method: 'post',
+    data: { tenantId }
+  })
+}

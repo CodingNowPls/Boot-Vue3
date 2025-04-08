@@ -2,9 +2,9 @@
   <div class="register">
     <el-form ref="registerRef" :model="registerForm" :rules="registerRules" class="register-form">
       <h3 class="title">{{ title }}</h3>
-      <el-form-item prop="username">
+      <el-form-item prop="userName">
         <el-input
-          v-model="registerForm.username"
+          v-model="registerForm.userName"
           type="text"
           size="large"
           auto-complete="off"
