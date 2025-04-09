@@ -46,11 +46,11 @@ function handleCommand(tenantId) {
 }
 
 onMounted(() => {
-  if (!isAdminLogin.value) {
-    getUserTenants().then(res => {
-      tenantList.value = res.data || [];
-    });
-  }
+  // if (!isAdminLogin.value) {
+  //   getUserTenants().then(res => {
+  //     tenantList.value = res.data || [];
+  //   });
+  // }
 });
 </script>
 
