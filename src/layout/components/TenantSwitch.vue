@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!isAdminLogin && tenantList.length > 0" class="tenant-switch">
+  <div v-if="isAdminLogin !== 1 && tenantList.length > 0" class="tenant-switch">
     <el-dropdown @command="handleCommand">
       <span class="tenant-dropdown-link">
         {{ currentTenantName }}<el-icon class="el-icon--right"><arrow-down /></el-icon>

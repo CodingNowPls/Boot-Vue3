@@ -172,7 +172,7 @@ function handleLogin() {
         code: state.loginForm.code,
         uuid: state.loginForm.uuid,
         tenantId: state.loginForm.tenantId,
-        isAdminLogin: false // 标记为租户登录
+        isAdminLogin: 2 // 标记为租户登录
       }).then(() => {
         router.push({ path: state.redirect || "/" });
       }).catch(() => {

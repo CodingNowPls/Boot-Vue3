@@ -14,7 +14,7 @@ const useUserStore = defineStore(
       permissions: [],
       userId: null,
       currenttenantId: null, // 当前租户ID
-      isAdminLogin: false, // 是否是管理员登录
+      isAdminLogin: 2, // 是否是管理员登录，1:管理员登录，2:非管理员登录
       tenantInfo: null, // 租户信息
     }),
     actions: {
@@ -25,7 +25,7 @@ const useUserStore = defineStore(
         const code = userInfo.code
         const uuid = userInfo.uuid
         const tenantId = userInfo.tenantId
-        const isAdminLogin = userInfo.isAdminLogin || false
+        const isAdminLogin = userInfo.isAdminLogin || 2
 
         return new Promise((resolve, reject) => {
           login(userName, password, code, uuid, isAdminLogin, tenantId).then(res => {
@@ -71,7 +71,7 @@ const useUserStore = defineStore(
             this.roles = []
             this.permissions = []
             this.currenttenantId = null
-            this.isAdminLogin = false
+            this.isAdminLogin = 2
             this.tenantInfo = null
             removeToken()
             resolve()

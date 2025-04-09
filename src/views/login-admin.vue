@@ -140,7 +140,7 @@ function handleLogin() {
         password: state.loginForm.password,
         code: state.loginForm.code,
         uuid: state.loginForm.uuid,
-        isAdminLogin: true // 标记为管理员登录
+        isAdminLogin: 1 // 标记为管理员登录
       }).then(() => {
         router.push({ path: state.redirect || "/" });
       }).catch(() => {

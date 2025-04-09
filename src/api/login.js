@@ -12,7 +12,7 @@ export function login(userName, password, code, uuid, isAdminLogin, tenantId) {
     isAdminLogin
   }
   // 如果是租户登录，添加租户ID
-  if (!isAdminLogin && tenantId) {
+  if (isAdminLogin !== 1 && tenantId) {
     data.tenantId = tenantId
   }
   return request({
