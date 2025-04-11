@@ -70,7 +70,7 @@
     </el-form>
     <!--  底部  -->
     <div class="el-register-footer">
-      <span>Copyright © 2018-2025 ruoyi.vip All Rights Reserved.</span>
+      <span>Copyright © 2018-2025 boot.vip All Rights Reserved.</span>
     </div>
   </div>
 </template>
@@ -146,7 +146,7 @@ function getCode() {
   getCodeImg().then(res => {
     captchaEnabled.value = res.captchaEnabled === undefined ? true : res.captchaEnabled;
     if (captchaEnabled.value) {
-      codeUrl.value = "data:image/gif;base64," + res.img;
+      codeUrl.value = res.img;
       registerForm.value.uuid = res.uuid;
     }
   });
