@@ -9,11 +9,8 @@ export function login(userName, password, code, uuid, isAdminLogin, tenantId) {
     password,
     code,
     uuid,
+    tenantId,
     isAdminLogin
-  }
-  // 如果是租户登录，添加租户ID
-  if (isAdminLogin !== 1 && tenantId) {
-    data.tenantId = tenantId
   }
   return request({
     url: '/login',

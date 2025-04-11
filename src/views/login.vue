@@ -136,7 +136,7 @@ function getCode() {
   getCodeImg().then(res => {
     state.captchaEnabled = res.captchaEnabled === undefined ? true : res.captchaEnabled;
     if (state.captchaEnabled) {
-      state.codeUrl = "data:image/gif;base64," + res.img;
+      state.codeUrl =  res.img;
       state.loginForm.uuid = res.uuid;
     }
   });
@@ -188,18 +188,26 @@ function switchToAdmin() {
   router.push('/login-admin');
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (state.captchaEnabled) {
     getCode();
   }
   // 获取租户列表
-  getTenants();
+  await getTenants();
 
   // 获取cookie
   const userName = Cookies.get("userName");
   const password = Cookies.get("password");
   const rememberMe = Cookies.get('rememberMe');
-  const tenantId = Cookies.get('tenantId');
+  let tenantId = Cookies.get('tenantId');
+  if (tenantId === null || tenantId === undefined) {
+    if (tenantOptions.value.length > 0) {
+      //把tenantOptions 中的第一个给他
+      tenantId = tenantOptions.value[0].tenantId;
+    } else {
+      tenantId = 0;
+    }
+  }
 
   // 设置默认值
   state.loginForm.rememberMe = rememberMe === 'true';
