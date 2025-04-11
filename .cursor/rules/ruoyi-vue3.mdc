@@ -1,0 +1,46 @@
+# 文件模式：*.vue, *.js
+
+## Vue 3 规范
+- 使用 `<script setup>` 语法糖
+- 遵循组合式 API（Composition API）最佳实践
+- 避免使用 Options API，除非有特殊需求
+- 所有组件应使用 JavaScript 编写
+- 组件命名采用 PascalCase 风格
+
+## 状态管理（Pinia）
+- 所有状态管理应使用 Pinia
+- 每个模块应封装为独立的 store
+- 避免在组件中直接修改 store 状态，使用定义的 action
+
+## UI 组件（Element Plus）
+- 所有 UI 组件应使用 Element Plus
+- 使用 `@element-plus/icons-vue` 提供的图标组件
+- 避免使用原生 HTML 元素替代 Element Plus 组件
+
+## 网络请求（Axios）
+- 所有网络请求应通过封装的 Axios 实例进行
+- 使用统一的请求和响应拦截器处理错误
+- 避免在组件中直接调用 Axios，应封装为服务模块
+
+## 路由管理（Vue Router）
+- 使用 Vue Router 4.x 版本
+- 所有路由配置应集中管理，避免在组件中定义路由
+- 路由命名应清晰，便于维护和导航
+
+## 样式规范
+- 使用 SCSS 预处理器编写样式
+- 遵循 BEM 命名规范
+- 避免使用内联样式，所有样式应写入 `.scss` 文件
+
+## 工具库
+- 使用 `lodash-es` 替代 `lodash`，以支持 Tree Shaking
+- 避免在组件中直接引入大型库，应按需引入所需功能
+
+## 代码风格
+- 遵循 ESLint 和 Prettier 配置的代码风格
+- 所有代码提交前应通过格式化和 lint 检查
+- 避免使用 `any` 类型，确保类型安全
+
+@file ../vite.config.js
+@file ../.eslintrc.js
+@file ../.prettierrc

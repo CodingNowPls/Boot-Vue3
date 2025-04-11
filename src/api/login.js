@@ -2,18 +2,13 @@ import request from '@/utils/request'
 import {encrypt} from "@/utils/jsencrypt.js";
 
 // 登录方法
-export function login(userName, password, code, uuid, isAdminLogin, tenantId) {
+export function login(userName, password, code, uuid) {
   password = encrypt(password);
   const data = {
     userName,
     password,
     code,
-    uuid,
-    isAdminLogin
-  }
-  // 如果是租户登录，添加租户ID
-  if (!isAdminLogin && tenantId) {
-    data.tenantId = tenantId
+    uuid
   }
   return request({
     url: '/login',
@@ -50,14 +45,5 @@ export function getCodeImg() {
     },
     method: 'get',
     timeout: 20000
-  })
-}
-
-// 切换租户
-export function switchTenant(tenantId) {
-  return request({
-    url: '/system/user/switchTenant',
-    method: 'post',
-    data: { tenantId }
   })
 }

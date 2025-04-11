@@ -13,9 +13,6 @@ const useUserStore = defineStore(
       roles: [],
       permissions: [],
       userId: null,
-      currenttenantId: null, // 当前租户ID
-      isAdminLogin: false, // 是否是管理员登录
-      tenantInfo: null, // 租户信息
     }),
     actions: {
       // 登录
@@ -24,14 +21,11 @@ const useUserStore = defineStore(
         const password = userInfo.password
         const code = userInfo.code
         const uuid = userInfo.uuid
-        const tenantId = userInfo.tenantId
-        const isAdminLogin = userInfo.isAdminLogin || false
 
         return new Promise((resolve, reject) => {
-          login(userName, password, code, uuid, isAdminLogin, tenantId).then(res => {
+          login(userName, password, code, uuid).then(res => {
             setToken(res.token)
             this.token = res.token
-            this.isAdminLogin = isAdminLogin
             resolve()
           }).catch(error => {
             reject(error)
@@ -54,9 +48,6 @@ const useUserStore = defineStore(
             this.name = user.userName
             this.avatar = avatar
             this.userId = user.userId
-            this.currenttenantId = res.currenttenantId
-            this.isAdminLogin = res.isAdminLogin
-            this.tenantInfo = res.tenantInfo
             resolve(res)
           }).catch(error => {
             reject(error)
@@ -70,9 +61,6 @@ const useUserStore = defineStore(
             this.token = ''
             this.roles = []
             this.permissions = []
-            this.currenttenantId = null
-            this.isAdminLogin = false
-            this.tenantInfo = null
             removeToken()
             resolve()
           }).catch(error => {
@@ -80,23 +68,6 @@ const useUserStore = defineStore(
           })
         })
       },
-      // 切换租户
-      switchTenant(tenantId) {
-        return new Promise((resolve, reject) => {
-          // 调用切换租户的API
-          switchTenant(tenantId).then(res => {
-            // 更新当前租户信息
-            this.currenttenantId = tenantId
-            this.tenantInfo = res.tenantInfo
-            // 更新权限和角色
-            this.roles = res.roles
-            this.permissions = res.permissions
-            resolve(res)
-          }).catch(error => {
-            reject(error)
-          })
-        })
-      }
     }
   })
 

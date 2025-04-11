@@ -43,11 +43,7 @@ export const constantRoutes = [
     component: () => import('@/views/login'),
     hidden: true
   },
-  {
-    path: '/login-admin',
-    component: () => import('@/views/login-admin'),
-    hidden: true
-  },
+
   {
     path: '/register',
     component: () => import('@/views/register'),
@@ -161,28 +157,6 @@ export const dynamicRoutes = [
         component: () => import('@/views/tool/gen/editTable'),
         name: 'GenEdit',
         meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
-      }
-    ]
-  },
-  // 在路由配置中添加租户菜单页面路由
-  {
-    path: '/tenant',
-    component: Layout,
-    hidden: false,
-    permissions: ['tenant:tenant:list'],
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/tenant/index'),
-        name: 'Tenant',
-        meta: { title: '租户管理', icon: 'apartment', permissions: ['tenant:tenant:list'] }
-      },
-      {
-        path: 'menu',
-        component: () => import('@/views/tenant/menu'),
-        name: 'TenantMenu',
-        meta: { title: '租户菜单设置', icon: 'menu', activeMenu: '/tenant/index', permissions: ['tenant:tenant:menu'] },
-        hidden: true
       }
     ]
   }
